@@ -1,5 +1,6 @@
 import tkinter as tk
 import time
+from PIL import Image, ImageTk  # untuk menampilkan gambar
 
 # BAGIAN 1: INISIASI DATA (Items, State Values, Pindah State)
 items = {
@@ -11,6 +12,13 @@ items = {
     'F1': {'nama': 'boneka beruang', 'aksesoris':['dress','backpack'], 'harga': 90000}, 'F2': {'nama': 'boneka kelinci', 'aksesoris':['dress','backpack'], 'harga': 90000}, 'F3': {'nama': 'boneka penguin', 'aksesoris':['dress','backpack'], 'harga': 90000},
     'G1': {'nama': 'boneka beruang', 'aksesoris':['jumpsuit','backpack'], 'harga': 90000}, 'G2': {'nama': 'boneka kelinci', 'aksesoris':['jumpsuit','backpack'], 'harga': 90000}, 'G3': {'nama': 'boneka penguin', 'aksesoris':['jumpsuit','backpack'], 'harga': 90000},
 }
+# Gambar boneka (pastikan file gambar ada di folder yang sama)
+img = {
+    'boneka beruang': 'beruangDef.jpeg',
+    'boneka kelinci': 'kelinciDef.jpeg',
+    'boneka penguin': 'penguinDef.jpeg'
+}
+
 state_values = {'Q10k':10000, 'Q20k':20000, 'Q30k':30000, 'Q40k':40000, 'Q50k':50000, 'Q60k':60000, 'Q70k':70000, 'Q80k':80000, 'Q90k':90000}
 
 pindah_state = {
@@ -79,6 +87,11 @@ class VendingMachineApp:
         # --- Label Status ---
         self.item_info_label = tk.Label(self.main_frame, textvariable=self.item_info_text, font=("Arial", 12), justify=tk.LEFT)
         self.item_info_label.pack(pady=5, anchor='w')
+        
+        # Label untuk menampilkan gambar boneka
+        self.image_label = tk.Label(self.main_frame)
+        self.image_label.pack(pady=10)
+
         tk.Label(self.main_frame, textvariable=self.saldo_text, font=("Arial", 12)).pack(pady=2)
         tk.Label(self.main_frame, textvariable=self.info_text, font=("Arial", 10, "italic"), fg="blue", wraplength=750).pack(pady=10)
 
@@ -191,11 +204,32 @@ class VendingMachineApp:
                         if aksi.isdigit():
                             label_tombol = f"Masukkan Rp{int(aksi):,}"
 
-                        # Jangan tampilkan tombol sinyal internal
-                        if not aksi.startswith('sinyal'):
-                           tk.Button(frame, text=label_tombol,
-                                     command=lambda a=aksi: self.handle_input(a),
-                                     padx=10, pady=5).pack(side=tk.LEFT, padx=5, pady=5)
+                        # --- BAGIAN TAMBAHAN UNTUK STATE 'pilih boneka' ---
+                        if state == 'pilih boneka' and aksi.startswith('pilih boneka'):
+                            nama_boneka = aksi.replace('pilih ', '')  # contoh: 'boneka beruang'
+                            frame_item = tk.Frame(frame)
+                            frame_item.pack(side=tk.LEFT, padx=10)
+
+                            # Tombol pilih boneka
+                            tk.Button(frame_item, text=label_tombol,
+                                    command=lambda a=aksi: self.handle_input(a),
+                                    padx=10, pady=5).pack()
+
+                            # Gambar boneka di bawah tombol
+                            try:
+                                img = Image.open(f"img/{nama_boneka.replace('boneka ', '')}Def.jpeg")
+                                img = img.resize((120, 120))
+                                photo = ImageTk.PhotoImage(img)
+                                lbl = tk.Label(frame_item, image=photo)
+                                lbl.image = photo  # jaga agar tidak dihapus
+                                lbl.pack()
+                            except Exception as e:
+                                tk.Label(frame_item, text="(gambar tidak ada)").pack()
+                        # -----------------------
+                        elif not aksi.startswith('sinyal'):
+                                    tk.Button(frame, text=label_tombol,
+                                            command=lambda a=aksi: self.handle_input(a),
+                                            padx=10, pady=5).pack(side=tk.LEFT, padx=5, pady=5)
                 frame.pack() # Tampilkan frame tombol yang sudah diisi
             else:
                 frame.pack_forget() # Sembunyikan frame lain
@@ -237,6 +271,29 @@ class VendingMachineApp:
              signal_input = 'sinyal_umpan_berhasil'
              self.info_text.set(output_msg) # Tampilkan pesan
              self.root.after(delay, lambda: self.handle_input(signal_input))
+             
+    def show_image(self, nama_boneka):
+        """Menampilkan gambar boneka sesuai pilihan"""
+        images = {
+            'boneka beruang': 'img/beruangDef.jpeg',
+            'boneka kelinci': 'img/kelinciDef.jpeg',
+            'boneka penguin': 'img/penguinDef.jpeg'
+        }
+
+        if nama_boneka in images:
+            try:
+                img = Image.open(images[nama_boneka])
+                img = img.resize((200, 200))
+                photo = ImageTk.PhotoImage(img)
+                self.image_label.config(image=photo, text='')  # tampilkan gambar
+                self.image_label.image = photo  # jaga agar tidak dihapus garbage collector
+            except Exception as e:
+                print(f"Gagal memuat gambar: {e}")
+                self.image_label.config(image='', text="(Gambar tidak tersedia)")
+        else:
+            self.image_label.config(image='', text="")
+
+
 
 # BAGIAN 4: MENJALANKAN APLIKASI
 if __name__ == "__main__":
