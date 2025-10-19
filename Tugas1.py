@@ -1,9 +1,7 @@
 import tkinter as tk
-import time # Untuk jeda simulasi
+import time
 
-# ==============================================================================
 # BAGIAN 1: INISIASI DATA (Items, State Values, Pindah State)
-# ==============================================================================
 items = {
     'A1': {'nama': 'boneka beruang', 'harga': 50000}, 'A2': {'nama': 'boneka kelinci', 'harga': 50000}, 'A3': {'nama': 'boneka penguin', 'harga': 50000},
     'B1': {'nama': 'boneka beruang', 'aksesoris':'dress', 'harga': 70000}, 'B2': {'nama': 'boneka kelinci', 'aksesoris':'dress', 'harga': 70000}, 'B3': {'nama': 'boneka penguin', 'aksesoris':'dress', 'harga': 70000},
@@ -15,7 +13,7 @@ items = {
 }
 state_values = {'Q10k':10000, 'Q20k':20000, 'Q30k':30000, 'Q40k':40000, 'Q50k':50000, 'Q60k':60000, 'Q70k':70000, 'Q80k':80000, 'Q90k':90000}
 
-pindah_state = { # Pastikan nama KONSISTEN (misal selalu Q50k)
+pindah_state = {
     'diam':{'mulai':'pilih boneka'},
     'pilih boneka':{'pilih boneka kelinci':'boneka kelinci', 'pilih boneka beruang':'boneka beruang', 'pilih boneka penguin':'boneka penguin'},
     'boneka kelinci':{'pilih aksesoris':'aksesoris', 'tolak aksesoris':'Q50k', 'kembali':'pilih boneka'},
@@ -57,14 +55,12 @@ pindah_state = { # Pastikan nama KONSISTEN (misal selalu Q50k)
     'umpan balik':{'sinyal_umpan_berhasil':'diam'}
 }
 
-# ==============================================================================
 # BAGIAN 3: APLIKASI TKINTER LENGKAP (Kerangka)
-# ==============================================================================
 class VendingMachineApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Mesin Boneka Interaktif") # Judul lebih sesuai
-        self.root.geometry("800x600")
+        self.root.geometry("700x600")
 
         self.current_state = 'diam'
         self.saldo = 0
@@ -72,7 +68,6 @@ class VendingMachineApp:
         self.current_item_details = None
 
         # --- Variabel untuk output/tampilan ---
-        # self.status_text = tk.StringVar() # <-- DIHAPUS/DIKOMENTARI
         self.saldo_text = tk.StringVar()
         self.info_text = tk.StringVar()
         self.item_info_text = tk.StringVar()
@@ -82,8 +77,6 @@ class VendingMachineApp:
         self.main_frame.pack(fill="both", expand=True)
 
         # --- Label Status ---
-        # Label untuk state dihapus/dikomentari
-        # tk.Label(self.main_frame, textvariable=self.status_text, font=("Arial", 16, "bold")).pack(pady=5)
         self.item_info_label = tk.Label(self.main_frame, textvariable=self.item_info_text, font=("Arial", 12), justify=tk.LEFT)
         self.item_info_label.pack(pady=5, anchor='w')
         tk.Label(self.main_frame, textvariable=self.saldo_text, font=("Arial", 12)).pack(pady=2)
@@ -113,7 +106,7 @@ class VendingMachineApp:
             print(f"   -> Transisi valid ke: '{next_state}'")
 
             # --- Logika Mealy / Aksi SEBELUM Pindah State ---
-            output_message = f"(Aksi '{aksi}' diterima)" # Default output (tanpa "OUTPUT: ")
+            output_message = f"(Aksi '{aksi}' diterima)"
 
             # Reset saldo/target jika Batal dari state pembayaran Q...k
             if next_state == 'diam' and aksi == 'batal' and self.current_state.startswith('Q'):
@@ -210,9 +203,9 @@ class VendingMachineApp:
 
     def trigger_internal_signals(self):
         """Mensimulasikan sinyal internal setelah jeda."""
-        delay = 1200 # Jeda 1.2 detik (ms)
+        delay = 3000 # Jeda 1.2 detik (ms)
         signal_input = None
-        output_msg = "" # Pesan output (tanpa "OUTPUT: ")
+        output_msg = ""
 
         if self.current_state.startswith('kembalian_sisa'):
             if self.current_state == 'kembalian_sisa_10k': signal_input = 'sinyal_10k_selesai'; output_msg = "Mengeluarkan 10k..."
@@ -245,9 +238,7 @@ class VendingMachineApp:
              self.info_text.set(output_msg) # Tampilkan pesan
              self.root.after(delay, lambda: self.handle_input(signal_input))
 
-# ==============================================================================
 # BAGIAN 4: MENJALANKAN APLIKASI
-# ==============================================================================
 if __name__ == "__main__":
     root = tk.Tk()
     app = VendingMachineApp(root)
